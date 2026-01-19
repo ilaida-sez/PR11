@@ -19,6 +19,7 @@
 		<title> Авторизация </title>
 		
 		<script src="https://code.jquery.com/jquery-1.8.3.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script> <!-- Добавить в практику -->
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
@@ -57,19 +58,42 @@
 		</div>
 		
 		<script>
-			function LogIn() {
+				const secretKey = "qazxswedcvfrgtgbn";
+
+				function encryptAES(data, key) {
+					var keyHash = CryptoJS.MD5(key);
+					var keyBytes = CryptoJS.enc.Hex.parse(keyHash.toString());
+
+					var iv = CryptoJS.lib.WordArray.random(16);
+
+					var encrypted = CryptoJS.AES.encrypt(data, keyBytes, {
+					iv : iv,
+					mode: CryptoJS.mode.CBC,
+					padding: CryptoJS.pad.Pkcs7
+					});
+
+					var combined = iv.concat(encrypted.ciphertext);
+
+					return CryptoJS.enc.Base64.stringify(combined);
+				}
+
+				function LogIn() {
 				var loading = document.getElementsByClassName("loading")[0];
 				var button = document.getElementsByClassName("button")[0];
-				
+
 				var _login = document.getElementsByName("_login")[0].value;
 				var _password = document.getElementsByName("_password")[0].value;
+
 				loading.style.display = "block";
 				button.className = "button_diactive";
-				
+
+				var encryptedLogin = encryptAES(_login, secretKey);
+				var encryptedPassword = encryptAES(_password, secretKey);
+
 				var data = new FormData();
-				data.append("login", _login);
-				data.append("password", _password);
-				
+				data.append("login", encryptedLogin);
+				data.append("password", encryptedPassword);
+							
 				// AJAX запрос
 				$.ajax({
 					url         : 'ajax/login_user.php',
@@ -90,7 +114,7 @@
 							alert("Логин или пароль не верный.");
 						} else {
 							localStorage.setItem("token", _data);
-							location.reload();
+							// location.reload();
 							loading.style.display = "none";
 							button.className = "button";
 						}
