@@ -97,7 +97,7 @@
 				// AJAX запрос
 				$.ajax({
 					url         : 'ajax/login_user.php',
-					type        : 'POST', // важно!
+					type        : 'POST',
 					data        : data,
 					cache       : false,
 					dataType    : 'html',
